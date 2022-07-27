@@ -1,0 +1,50 @@
+{% include "header.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url({{ url_for('static', filename='img/twombly2.jpg') }})">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto testing">
+          <div class="page-heading">
+	    <h1>Log In</h1>
+            <span class="subheading">Welcome Back!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="row">
+
+      <div class="col-lg-8 col-md-10 mx-auto content">
+
+	{% with messages = get_flashed_messages() %}
+	  {% if messages %}
+	    <ul class=flashes>
+	    {% for message in messages %}
+	      <p>{{ message }}</p>
+	    {% endfor %}
+	    </ul>
+	  {% endif %}
+	{% endwith %}
+
+	<form class="form" method="POST" role="form" novalidate=True>
+	  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+	  <div class="input-field">
+	    {{ wtf.form_field(form.email) }}
+	    {{ wtf.form_field(form.password) }}
+	    {{ wtf.form_field(form.login, class_="btn btn-primary") }}
+	  </div>
+	</form>
+      </div>
+    </div>
+  </div>
+
+
+{% include "footer.html" %}
+{% endblock %}

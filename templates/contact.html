@@ -1,0 +1,39 @@
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block content %}
+{% include "header.html" %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url('{{ url_for('static', filename='img/twombly5.jpg')}}')">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="page-heading">
+            <h1>Contact Me</h1>
+            <span class="subheading">Have questions? I have no answers (but you can write anyway).</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+	<form class="form" role="form" method="POST">
+	  <input type="hidden" name="csrf_token" value={{ csrf_token() }}>
+	  <div class="input-field">
+	    {{ wtf.form_field(form.name) }}
+	    {{ wtf.form_field(form.email) }}
+	    {{ wtf.form_field(form.subject) }}
+	    {{ wtf.form_field(form.message, cols="35", rows="10") }}
+	    {{ wtf.form_field(form.send, class_="btn btn-primary") }}
+	  </div>
+	</form>
+      </div>
+    </div>
+  </div>
+
+  {% include "footer.html" %}
+  {% endblock %}

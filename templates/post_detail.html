@@ -1,0 +1,87 @@
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% include "header.html" %}
+
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url('{{post.img_url}}')">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="post-heading">
+            <h1>{{post.title}}</h1>
+            <h2 class="subheading">{{post.subtitle}}</h2>
+            <span class="meta">Posted by
+		    <a href="#-{{ url_for('about') }}">{{post.author.name}}</a>
+              on {{post.date}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Post Content -->
+  <article>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+            {{ post.body|safe }}
+          <hr>
+
+	  <div class="clearfix">
+	  <a class="btn btn-primary float-right"
+	     href="{{url_for('post_edit', post_id=post.id)}}">Edit Post</a>
+	  </div>
+
+	  <!-- messages -->
+	  {% with messages = get_flashed_messages() %}
+	    {% if messages %}
+	      <ul class=flashes>
+	      {% for message in messages %}
+		<p>{{ message }}</p>
+	      {% endfor %}
+	      </ul>
+	    {% endif %}
+	  {% endwith %}
+
+	  <!-- New comment -->
+	  {% if current_user.is_authenticated %}
+	    {{ ckeditor.load() }}
+	    {{ ckeditor.config(name='body') }}
+	    <form class="form" method="POST" role="form">
+	      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+	      {{ wtf.form_field(form.body) }}
+	      {{ wtf.form_field(form.submit, class_="btn btn-primary") }}
+	    </form>
+	  {% endif %}
+
+	  <!-- Comment list -->
+          <div class="col-lg-8 col-md-10 mx-auto comment">
+              <ul class="commentList">
+		{% for comment in comments %}
+		  {% if post == comment.post %}
+                    <div class="commenterImage">
+		      <img src="{{ comment.author.email | gravatar }}"/>
+                    </div>
+                    <div class="commentText">
+		      <p>{{ comment.text|safe }}</p>
+
+			{% if current_user.id == comment.author_id or current_user.id == 1 %}
+			  <a href="{{url_for('comment_delete', comment_id=comment.id) }}">✘</a>
+			{% endif %}
+
+		      <span class="date sub-text">{{ comment.author.name }}</span>
+                    </div>
+		  {% endif %}
+		{% endfor %}
+              </ul>
+            </div>
+
+          </div>
+      </div>
+    </div>
+  </article>
+
+  <hr>
+{% include "footer.html" %}

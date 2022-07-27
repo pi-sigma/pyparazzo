@@ -1,0 +1,34 @@
+{% include "header.html" %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url({{ url_for('static', filename='img/twombly4.jpg') }})">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="page-heading">
+            <h1>About Me</h1>
+            <span class="subheading">This is what I do.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <!-- Main Content -->
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+	<p>
+	Programmer and software developer.
+	I am most comfortable with the Python ecosystem, includding libraries and frameworks like Tkinter, Django, Flask.
+	However, I also dabble in various other technologies, including C, JavaScript, HTML, CSS.
+	</p>
+	<p>
+	My academic background is in philosophy and classics, but I've taken and audited a wide range of university courses, including some CS-related ones (logic, set theory, proof theory, computability). 
+	</p>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+  {% include "footer.html" %}
