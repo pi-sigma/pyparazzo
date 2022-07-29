@@ -32,8 +32,8 @@ python -m pip install -r requirements.txt
 ## Usage
 Start the app:
 ```sh
-flask run
+python run.py
 ```
 
-Manipulation of blog posts is restricted to the user with id 1 (usually the admin) via a custom decorator (the code is in [utils.py](https://github.com/pi-sigma/pyperazzo/blob/main/utils.py)).
-In order to allow other users to create, update, and delete posts, remove the `@admin_only` decorator from the functions `post_create`, `post_delete`, `post_edit` in [app.py](https://github.com/pi-sigma/pyperazzo/blob/main/app.py) and add the `@login_required` decorator instead.
+Manipulation of blog posts is restricted to the user with id 1 (usually the admin) via a custom decorator (the code is in [application/utils.py](https://github.com/pi-sigma/pyperazzo/blob/main/application/utils.py)).
+In order to allow other users to create, update, and delete posts, remove the `@admin_only` decorator from `post_create`, `post_delete`, `post_edit` in [application/routes.py](https://github.com/pi-sigma/pyperazzo/blob/main/application/routes.py) and add the `@login_required` decorator instead.
