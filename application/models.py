@@ -1,13 +1,9 @@
-from app import app
-
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
-from flask_migrate import Migrate
 
 
-db = SQLAlchemy(app, session_options={"autoflush": False})
-migrate = Migrate(app, db)
+db = SQLAlchemy(session_options={"autoflush": False})
 
 
 class User(UserMixin, db.Model):

@@ -11,7 +11,7 @@
             <h1>{{post.title}}</h1>
             <h2 class="subheading">{{post.subtitle}}</h2>
             <span class="meta">Posted by
-		    <a href="#-{{ url_for('about') }}">{{post.author.name}}</a>
+		    <a href="#-{{ url_for('main_bp.about') }}">{{post.author.name}}</a>
               on {{post.date}}</span>
           </div>
         </div>
@@ -27,8 +27,10 @@
             {{ markdown|safe }}
           <hr>
 	  <div class="clearfix">
+	  {% if current_user.id == 1 %}
 	  <a class="btn btn-primary float-right"
-	     href="{{url_for('post_edit', post_id=post.id)}}">Edit Post</a>
+	     href="{{url_for('main_bp.post_edit', post_id=post.id)}}">Edit Post</a>
+	  {% endif %}
 	  </div>
 
 	  <!-- messages -->
@@ -65,7 +67,7 @@
 		      <p>{{ comment.text|safe }}</p>
 
 			{% if current_user.id == comment.author_id or current_user.id == 1 %}
-			  <a href="{{url_for('comment_delete', comment_id=comment.id) }}">✘</a>
+			  <a href="{{url_for('main_bp.comment_delete', comment_id=comment.id) }}">✘</a>
 			{% endif %}
 
 		      <span class="date sub-text">{{ comment.author.name }}</span>

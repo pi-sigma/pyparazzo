@@ -1,81 +1,25 @@
-import os
-import smtplib
-from email.message import EmailMessage
 from datetime import datetime
 
-from flask import Flask, render_template, redirect, request, url_for, flash
-from flask_bootstrap import Bootstrap
-from flask_ckeditor import CKEditor
-from flaskext.markdown import Markdown
-from flask_wtf.csrf import CSRFProtect
-from flask_login import login_user, LoginManager, login_required, current_user, logout_user
-from flask_gravatar import Gravatar
+from flask import Blueprint
+from flask import render_template, redirect, request, url_for, flash
+from flask_login import login_user, login_required, current_user, logout_user
 from markdown import markdown
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from forms import RegisterForm, LoginForm, CreatePostForm, CommentForm, EmailForm
-from utils import sanitize_html, admin_only
-
-app = Flask(__name__)
-
-# Configure db
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    "DATABASE_URL_FIXED", "sqlite:///blog.db"  # "postgres" < "postgresql"
-)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Import db + models here to avoid circular deps
-from models import db, User, BlogPost, Comment
-
-# Configure secret key
-SECRET_KEY = os.environ.get("SECRET_KEY", "hush-hush")
-app.config["SECRET_KEY"] = SECRET_KEY
-
-# Configure mail
-MY_EMAIL = os.environ.get("MY_EMAIL")
-GMAIL_PWD = os.environ.get("GMAIL_PWD")
-
-app.config["CKEDITOR_ENABLE_CODESNIPPET"] = True
-
-# Register extensions
-csrf = CSRFProtect(app)
-csrf.init_app(app)
-login_manager = LoginManager()
-login_manager.init_app(app)
-ckeditor = CKEditor(app)
-Bootstrap(app)
-Markdown(app)
-gravatar = Gravatar(
-    app,
-    size=100,
-    rating='g',
-    default='retro',
-    force_default=False,
-    force_lower=False,
-    use_ssl=False,
-    base_url=None
-)
+from .forms import RegisterForm, LoginForm, CreatePostForm, CommentForm, EmailForm
+from .utils import sanitize_html, admin_only, send_mail
+from .models import db, User, BlogPost, Comment
 
 
-# Helper functions
-############################################
-@app.before_first_request
-def initialize_database():
-    db.create_all()
+main_bp = Blueprint('main_bp', __name__, template_folder='templates')
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-############################################
-
-
-@app.route("/about")
+@main_bp.route("/about")
 def about():
     return render_template("about.html")
 
 
-@app.route("/delete/comment/<int:comment_id>", methods=["GET", "POST"])
+@main_bp.route("/delete/comment/<int:comment_id>", methods=["GET", "POST"])
 @login_required
 def comment_delete(comment_id):
     comment = Comment.query.get(comment_id)
@@ -83,35 +27,29 @@ def comment_delete(comment_id):
     if request.method == "POST":
         db.session.delete(comment)
         db.session.commit()
-        return redirect(url_for("post_detail", post_id=post.id))
+        return redirect(url_for("main_bp.post_detail", post_id=post.id))
     return render_template("comment_delete.html", comment_id=comment_id, post_id=post.id)
 
 
-@app.route("/contact", methods=["GET", "POST"])
+@main_bp.route("/contact", methods=["GET", "POST"])
 def contact():
     form = EmailForm()
     if request.method == "POST":
-        msg = EmailMessage()
-        msg['Subject'] = form.subject.data
-        msg['From'] = form.email.data
-        msg['To'] = MY_EMAIL
-        msg.set_content(form.message.data)
-
-        with smtplib.SMTP("smtp.gmail.com", port=587) as server:
-            server.starttls()
-            server.login(user=MY_EMAIL, password=GMAIL_PWD)
-            server.send_message(msg)
-        return redirect(url_for("contact"))
+        subject = form.subject.data
+        sender = form.email.data
+        content = form.message.data
+        send_mail(subject, sender, content)
+        return redirect(url_for("main_bp.contact"))
     return render_template("contact.html", form=form)
 
 
-@app.route('/')
-def home():
+@main_bp.route('/')
+def index():
     posts = BlogPost.query.all()
     return render_template("index.html", all_posts=posts)
 
 
-@app.route('/login', methods=["GET", "POST"])
+@main_bp.route('/login', methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if request.method == "POST" and form.validate():
@@ -120,24 +58,24 @@ def login():
         user = User.query.filter_by(email=email).first()
         if not user or not check_password_hash(user.password, password):
             flash("Invalid credentials: check email and/or password", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("main_bp.login"))
         else:
             user.authenticated = True
             db.session.add(user)
             db.session.commit()
             login_user(user, remember=True)
-            return redirect(url_for("home"))
+            return redirect(url_for("main_bp.index"))
     return render_template("login.html", form=form)
 
 
-@app.route('/logout')
+@main_bp.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('home'))
+    return redirect(url_for('main_bp.index'))
 
 
-@app.route("/post/<int:post_id>", methods=["GET", "POST"])
+@main_bp.route("/post/<int:post_id>", methods=["GET", "POST"])
 def post_detail(post_id):
     requested_post = BlogPost.query.get(post_id)
     mkd = markdown(requested_post.body, extensions=['fenced_code', 'codehilite'])
@@ -146,7 +84,7 @@ def post_detail(post_id):
     if request.method == "POST":
         if not current_user.is_authenticated:
             flash("Must be logged in for this", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("main_bp.login"))
         new_comment = Comment(
             post=requested_post,
             author=current_user,
@@ -154,11 +92,22 @@ def post_detail(post_id):
         )
         db.session.add(new_comment)
         db.session.commit()
-        return redirect(url_for("post_detail", post_id=requested_post.id))
+        return redirect(url_for("main_bp.post_detail", post_id=requested_post.id))
     return render_template("post_detail.html", markdown=mkd, post=requested_post, comments=comments, form=form)
 
 
-@app.route("/post/new", methods=["GET", "POST"])
+@main_bp.route("/delete/post/<int:post_id>", methods=["GET", "POST"])
+@admin_only
+def post_delete(post_id):
+    post = BlogPost.query.get(post_id)
+    if request.method == "POST":
+        db.session.delete(post)
+        db.session.commit()
+        return redirect(url_for('main_bp.index'))
+    return render_template("post_delete.html", post_id=post_id)
+
+
+@main_bp.route("/post/new", methods=["GET", "POST"])
 @admin_only
 def post_create():
     form = CreatePostForm()
@@ -173,22 +122,11 @@ def post_create():
         )
         db.session.add(new_post)
         db.session.commit()
-        return redirect(url_for('home'))
+        return redirect(url_for('main_bp.index'))
     return render_template("post_create.html", form=form)
 
 
-@app.route("/delete/post/<int:post_id>", methods=["GET", "POST"])
-@admin_only
-def post_delete(post_id):
-    post = BlogPost.query.get(post_id)
-    if request.method == "POST":
-        db.session.delete(post)
-        db.session.commit()
-        return redirect(url_for('home'))
-    return render_template("post_delete.html", post_id=post_id)
-
-
-@app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
+@main_bp.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 @admin_only
 def post_edit(post_id):
     post = BlogPost.query.get(post_id)
@@ -206,19 +144,18 @@ def post_edit(post_id):
         post.author = post.author
         post.body = edit_form.body.data
         db.session.commit()
-        return redirect(url_for("post_detail", post_id=post.id))
-
+        return redirect(url_for("main_bp.post_detail", post_id=post.id))
     return render_template("post_create.html", form=edit_form, is_edit=True)
 
 
-@app.route('/register', methods=["GET", "POST"])
+@main_bp.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
     if request.method == "POST" and form.validate():
         email = form.email.data
         if User.query.filter_by(email=email).first() is not None:
             flash("A user with that email already exists. You can login below.", "error")
-            return redirect(url_for("login"))
+            return redirect(url_for("main_bp.login"))
         password = form.password.data
         password_hashed_salted = generate_password_hash(
             password,
@@ -233,10 +170,5 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         login_user(new_user, remember=True)
-        return redirect(url_for("home"))
+        return redirect(url_for("main_bp.index"))
     return render_template("register.html", form=form)
-
-
-if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)

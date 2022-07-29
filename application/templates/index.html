@@ -21,7 +21,7 @@
       <div class="col-lg-8 col-md-10 mx-auto">
         {% for post in all_posts %}
         <div class="post-preview">
-          <a href="{{ url_for('post_detail', post_id=post.id) }}">
+          <a href="{{ url_for('main_bp.post_detail', post_id=post.id) }}">
             <h2 class="post-title">
               {{post.title}}
             </h2>
@@ -29,9 +29,9 @@
               {{post.subtitle}}
             </h3>
           </a>
-	  <p class="post-meta">Posted by <a href="{{ url_for('about') }}">{{post.author.name}}</a> on {{post.date}} 
+	  <p class="post-meta">Posted by <a href="{{ url_for('main_bp.about') }}">{{post.author.name}}</a> on {{post.date}} 
 	    {% if current_user.id == 1 %}
-            <a href="{{url_for('post_delete', post_id=post.id) }}">✘</a>
+            <a href="{{url_for('main_bp.post_delete', post_id=post.id) }}">✘</a>
 	    {% endif %}
           </p>
         </div>
@@ -52,7 +52,7 @@
         <!-- New Post -->
 	{% if current_user.id == 1 %}
         <div class="clearfix">
-          <a class="btn btn-primary float-right" href="{{url_for('post_create')}}">Create New Post</a>
+          <a class="btn btn-primary float-right" href="{{url_for('main_bp.post_create')}}">Create New Post</a>
         </div>
 	{% endif %}
       </div>

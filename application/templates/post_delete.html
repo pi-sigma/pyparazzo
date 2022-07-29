@@ -13,17 +13,16 @@
         <div class="col-lg-8 col-md-10 mx-auto">
           <div class="page-heading">
             <h1>Sure you want to delete?</h1>
-            <!-- <span class="subheading">Think hard!</span> -->
           </div>
         </div>
       </div>
     </div>
   </header>
 
-  <form class="delete-form" action="{{ url_for("delete_comment", comment_id=comment_id) }}" method="POST">
+  <form class="delete-form" action="{{ url_for("main_bp.post_delete", post_id=post_id) }}" method="POST">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button class="btn btn-danger" type="submit">Delete</button>
-    <a class="btn btn-primary" href="{{ url_for("post_detail", post_id=post_id) }}">Cancel</a>
+    <a class="btn btn-primary" href="{{ url_for("main_bp.index") }}">Cancel</a>
   </form>
 
 {% include "footer.html" %}
