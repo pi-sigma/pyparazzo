@@ -26,19 +26,15 @@
   <div class="container">
     <div class="row">
       <div class="col-lg-8 col-md-10 mx-auto">
-        {{ ckeditor.load() }}
-        {{ ckeditor.config(name='body') }}
-
 	<form class="form" method="POST" role="form">
 	  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 	  {{ wtf.form_field(form.title) }}
 	  {{ wtf.form_field(form.subtitle) }}
 	  {{ wtf.form_field(form.author) }}
 	  {{ wtf.form_field(form.img_url) }}
-	  {{ wtf.form_field(form.body) }}
+	  {{ wtf.form_field(form.body, cols="35", rows="35") }}
 	  {{ wtf.form_field(form.submit, class_="btn btn-primary") }}
 	</form>
-
       </div>
     </div>
   </div>

@@ -6,10 +6,12 @@ from datetime import datetime
 from flask import Flask, render_template, redirect, request, url_for, flash
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
+from flaskext.markdown import Markdown
 from flask_wtf.csrf import CSRFProtect
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, LoginManager, login_required, current_user, logout_user
 from flask_gravatar import Gravatar
+from markdown import markdown
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from forms import RegisterForm, LoginForm, CreatePostForm, CommentForm, EmailForm
 from utils import sanitize_html, admin_only
@@ -18,7 +20,7 @@ app = Flask(__name__)
 
 # Configure db
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    "DATABASE_URL_FIXED", "sqlite:///blog.db"  # "postgres" > "postgresql"
+    "DATABASE_URL_FIXED", "sqlite:///blog.db"  # "postgres" < "postgresql"
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -42,6 +44,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 ckeditor = CKEditor(app)
 Bootstrap(app)
+Markdown(app)
 gravatar = Gravatar(
     app,
     size=100,
@@ -52,6 +55,7 @@ gravatar = Gravatar(
     use_ssl=False,
     base_url=None
 )
+
 
 # Helper functions
 ############################################
@@ -136,6 +140,7 @@ def logout():
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
 def post_detail(post_id):
     requested_post = BlogPost.query.get(post_id)
+    mkd = markdown(requested_post.body, extensions=['fenced_code', 'codehilite'])
     comments = Comment.query.all()
     form = CommentForm()
     if request.method == "POST":
@@ -150,7 +155,7 @@ def post_detail(post_id):
         db.session.add(new_comment)
         db.session.commit()
         return redirect(url_for("post_detail", post_id=requested_post.id))
-    return render_template("post_detail.html", post=requested_post, comments=comments, form=form)
+    return render_template("post_detail.html", markdown=mkd, post=requested_post, comments=comments, form=form)
 
 
 @app.route("/post/new", methods=["GET", "POST"])
