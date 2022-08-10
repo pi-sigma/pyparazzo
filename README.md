@@ -3,7 +3,7 @@
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue)](https://www.python.org/downloads/release/python-3100/)
 [![Flask 2.1](https://img.shields.io/badge/flask-2.1-blue)](https://flask.palletsprojects.com/en/2.1.x/)
 
-[https://pyperazzo.herokuapp.com/](https://pyperazzo.herokuapp.com/)
+[https://pyparazzo.herokuapp.com/](https://pyperazzo.herokuapp.com/)
 
 ## Overview
 Personal blog application.
