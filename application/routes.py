@@ -1,5 +1,8 @@
 from datetime import datetime
 
+from sqlalchemy import desc
+
+
 from flask import Blueprint
 from flask import render_template, redirect, request, url_for, flash
 from flask_login import login_user, login_required, current_user, logout_user
@@ -45,7 +48,7 @@ def contact():
 
 @main_bp.route('/')
 def index():
-    posts = BlogPost.query.all()
+    posts = BlogPost.query.order_by(BlogPost.date.desc()).all()
     return render_template("index.html", all_posts=posts)
 
 
@@ -116,9 +119,9 @@ def post_create():
             author=current_user,
             title=form.title.data,
             subtitle=form.subtitle.data,
-            body=sanitize_html(form.body.data),
+            body=form.body.data,
             img_url=form.img_url.data,
-            date=datetime.now().strftime("%B %d, %Y"),
+            date=datetime.utcnow(),
         )
         db.session.add(new_post)
         db.session.commit()

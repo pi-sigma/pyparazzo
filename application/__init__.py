@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
@@ -28,7 +31,14 @@ login_manager = LoginManager()
 def create_app():
     # Initialize core application
     app = Flask(__name__, instance_relative_config=False)
-    app.config.from_object('config.Config')
+
+    load_dotenv()
+    FLASK_ENV = os.getenv("FLASK_ENV")
+    match FLASK_ENV:
+        case "development":
+            app.config.from_object('config.Dev')
+        case _:
+            app.config.from_object('config.Prod')
 
     # Initialize plugins
     csrf.init_app(app)

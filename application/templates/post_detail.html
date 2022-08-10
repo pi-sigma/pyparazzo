@@ -12,7 +12,7 @@
             <h2 class="subheading">{{post.subtitle}}</h2>
             <span class="meta">Posted by
 		    <a href="#-{{ url_for('main_bp.about') }}">{{post.author.name}}</a>
-              on {{post.date}}</span>
+              on {{post.date.strftime("%m-%d-%Y")}}</span>
           </div>
         </div>
       </div>

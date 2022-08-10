@@ -1,5 +1,8 @@
+import datetime
+
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import DateTime
 from sqlalchemy.orm import relationship
 
 
@@ -24,7 +27,7 @@ class BlogPost(db.Model):
     subtitle = db.Column(db.String(250), nullable=True)
     body = db.Column(db.Text, nullable=False)
     img_url = db.Column(db.String(250), nullable=True)
-    date = db.Column(db.String(250), nullable=False)
+    date = db.Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
     author = relationship("User", back_populates="posts")
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))  # plural (> tablename)
     comments = relationship("Comment", back_populates="post")
